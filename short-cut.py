@@ -65,7 +65,7 @@ while True :
             elif namespace != "~" :
                 cmd.extend(["-n",namespace])
             cmd = " ".join(cmd)
-            shell(cmd)
+            shell(cmd + '\n')
         
     else :
         shell(cmd)
