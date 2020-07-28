@@ -20,6 +20,7 @@ def _shell(proc, logger, cmd, log = True) :
     proc.stdin.write(">&2 echo EOF\n".encode())
     proc.stdin.flush()
 
+    print(cmd)
     out = _fetch(proc.stdout)
     err = _fetch(proc.stderr)
 
@@ -65,7 +66,7 @@ while True :
             elif namespace != "~" :
                 cmd.extend(["-n",namespace])
             cmd = " ".join(cmd)
-            shell(cmd + '\n')
+            shell(cmd)
         
     else :
         shell(cmd)
