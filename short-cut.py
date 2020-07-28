@@ -1,14 +1,40 @@
 import subprocess
 import sys
+import select
 from functools import partial
+import logging
+import time
 
-def _shell(proc, cmd) :
+def _fetch(file) :
+    ret, buf = "", ""
+    while buf != "EOF" :
+        if buf :
+            ret += buf + "\n"
+        buf = file.readline().decode().rstrip()
+        
+    return ret.rstrip()
+
+def _shell(proc, logger, cmd, log = True) :
     proc.stdin.write((cmd + '\n') .encode())
+    proc.stdin.write("echo EOF\n".encode())
+    proc.stdin.write(">&2 echo EOF\n".encode())
     proc.stdin.flush()
-    return proc.stdout.readline().decode().rstrip()
+
+    out = _fetch(proc.stdout)
+    err = _fetch(proc.stderr)
+
+    if out and log:
+        print(out)
+    if err and log:
+        print(err)
+
+    return out
+
 
 proc = subprocess.Popen(['/bin/bash'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-shell = partial(_shell, proc)
+logger = logging.getLogger('bash_log')
+logger.setLevel(logging.ERROR)
+shell = partial(_shell, proc, logger)
 
 cmd_list = ["kls", "kcd", "kcat", "klog", "kexit"]
 cmd_alias = {
@@ -19,7 +45,7 @@ cmd_alias = {
 namespace = '~'
 print("Welcome to use kubernetes shell.")
 while True :
-    cmd = input('%s:%s$ ' % (shell("echo $USER"), namespace))
+    cmd = input('%s:%s$ ' % (shell("echo $USER", log = False), namespace))
     if (cmd.split()[0] in cmd_list) :
         cmd = cmd.split()
         if cmd[0] == "kexit" :
@@ -39,7 +65,7 @@ while True :
             elif namespace != "~" :
                 cmd.extend(["-n",namespace])
             cmd = " ".join(cmd)
-            print(shell(cmd))
+            shell(cmd)
         
     else :
-        print(shell(cmd))
+        shell(cmd)
