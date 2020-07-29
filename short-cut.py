@@ -46,7 +46,7 @@ cmd_alias = {
 namespace = '~'
 print("Welcome to use kubernetes shell.")
 while True :
-    cmd = input('%s:%s$ ' % (shell("echo $USER", log = False), namespace))
+    cmd = input('%s:%s[%s]$ ' % (shell("echo $USER", log = False),shell("dirs +0", log = False), namespace))
     if (cmd.split()[0] in cmd_list) :
         cmd = cmd.split()
         if cmd[0] == "kexit" :
